@@ -1,6 +1,6 @@
 {
   "name": "revine",
-  "version": "0.9.1",
+  "version": "1.0.0",
   "description": "A react framework, but better.",
   "license": "MIT",
   "author": "Rachit Bharadwaj",
@@ -9,16 +9,16 @@
   "bin": {
     "revine": "dist/index.js"
   },
-"exports": {
-  ".": {
-    "import": "./dist/client.js",
-    "types": "./dist/client.d.ts"
+  "exports": {
+    ".": {
+      "import": "./dist/client.js",
+      "types": "./dist/client.d.ts"
+    },
+    "./routing": {
+      "import": "./dist/runtime/routing.js",
+      "types": "./dist/runtime/routing.d.ts"
+    }
   },
-  "./routing": {
-    "import": "./dist/runtime/routing.js",
-    "types": "./dist/runtime/routing.d.ts"
-  }
-},
   "typesVersions": {},
   "scripts": {
     "build": "tsc",
