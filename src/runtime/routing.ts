@@ -4,10 +4,10 @@
 //
 // The type declaration below tells TypeScript that `router` exists on this module
 // so consumers don't get ts(2305) errors.
-import type { Router } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 
 declare module "revine/routing" {
-  export const router: Router;
+  export const router: ReturnType<typeof createBrowserRouter>;
 }
 
 export {};
