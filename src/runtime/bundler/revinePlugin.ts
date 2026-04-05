@@ -21,68 +21,80 @@ const NotFoundComponent = Object.values(notFoundModules)[0]?.default;
 
 const pages = import.meta.glob("/src/pages/**/*.tsx");
 const layoutModules = import.meta.glob("/src/pages/**/layout.tsx", { eager: true });
+const loadingModules = import.meta.glob("/src/pages/**/loading.tsx", { eager: true });
 
-// Collect ALL layouts from root down to the page's directory
-// e.g. /src/pages/about/team/index.tsx
-//   → [/src/pages/layout.tsx, /src/pages/about/layout.tsx, /src/pages/about/team/layout.tsx]
 function getLayoutsForPath(filePath) {
   const parts = filePath.split("/");
-  parts.pop(); // remove filename
-
+  parts.pop();
   const layouts = [];
   const accumulated = [];
-
   for (const part of parts) {
     accumulated.push(part);
-    const layoutKey = accumulated.join("/") + "/layout.tsx";
-    if (layoutModules[layoutKey]?.default) {
-      layouts.push(layoutModules[layoutKey].default);
+    const key = accumulated.join("/") + "/layout.tsx";
+    if (layoutModules[key] && layoutModules[key].default) {
+      layouts.push(layoutModules[key].default);
     }
   }
-
-  return layouts; // ordered outermost → innermost
+  return layouts;
 }
 
-// Wrap element in layouts from innermost to outermost
-// layouts = [RootLayout, AboutLayout] → RootLayout > AboutLayout > page
+function getLoadingForPath(filePath) {
+  const parts = filePath.split("/");
+  parts.pop();
+  while (parts.length >= 2) {
+    const key = parts.join("/") + "/loading.tsx";
+    if (loadingModules[key] && loadingModules[key].default) {
+      return loadingModules[key].default;
+    }
+    parts.pop();
+  }
+  return null;
+}
+
 function wrapWithLayouts(element, layouts) {
-  // wrap from right to left so outermost is the final outer wrapper
   return layouts.reduceRight((wrapped, Layout) => {
     return createElement(Layout, null, wrapped);
   }, element);
 }
 
 function toRoutePath(filePath) {
-  let cleaned = filePath.replace(/\\\\/g, "/");
-  cleaned = cleaned.replace(/.*\\/pages\\//, "");
-  cleaned = cleaned.replace(/\\.tsx$/i, "");
-  cleaned = cleaned.replace(/\\/index$/, "");
-  cleaned = cleaned.replace(/\\([^)]+\\)\\//g, "");
-  cleaned = cleaned.replace(/\\[(\\w+)\\]/g, ":$1");
-  if (cleaned === "index") cleaned = "";
-  return cleaned === "" ? "/" : \`/\${cleaned}\`;
+  let p = filePath;
+  p = p.replace(/[\\\\]/g, "/");
+  p = p.replace(/.*[/]pages[/]/, "");
+  p = p.replace(/[.]tsx$/i, "");
+  p = p.replace(/[/]index$/, "");
+  p = p.replace(/[(][^)]+[)][/]/g, "");
+  p = p.replace(/[[]([\\w]+)[\\]]/g, ":$1");
+  if (p === "index" || p === "") return "/";
+  return "/" + p;
 }
 
-const pageEntries = Object.entries(pages).filter(
-  ([filePath]) => !filePath.endsWith("/layout.tsx")
-);
+const pageEntries = Object.entries(pages).filter(([filePath]) => {
+  if (filePath.endsWith("/layout.tsx")) return false;
+  if (filePath.endsWith("/loading.tsx")) return false;
+  const segments = filePath.split("/");
+  return !segments.some((s) => s.startsWith("_"));
+});
 
 const routes = pageEntries.map(([filePath, component]) => {
   const routePath = toRoutePath(filePath);
   const Component = lazy(component);
   const layouts = getLayoutsForPath(filePath);
+  const Loading = getLoadingForPath(filePath);
+
+  const fallback = Loading
+    ? createElement(Loading)
+    : createElement("div", null, "Loading\\u2026");
 
   const pageElement = createElement(
     Suspense,
-    { fallback: createElement("div", null, "Loading\u2026") },
+    { fallback },
     createElement(Component)
   );
 
   return {
     path: routePath,
-    element: layouts.length > 0
-      ? wrapWithLayouts(pageElement, layouts)
-      : pageElement,
+    element: layouts.length > 0 ? wrapWithLayouts(pageElement, layouts) : pageElement,
   };
 });
 
