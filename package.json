@@ -1,6 +1,6 @@
 {
   "name": "revine",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "A react framework, but better.",
   "license": "ISC",
   "author": "Rachit Bharadwaj",
@@ -23,7 +23,6 @@
       "types": "./dist/runtime/bundler/*.d.ts"
     }
   },
-
   "typesVersions": {
     "*": {
       "routing": [
