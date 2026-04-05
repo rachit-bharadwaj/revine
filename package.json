@@ -10,9 +10,29 @@
     "revine": "dist/index.js"
   },
   "exports": {
-    ".": "./dist/index.js",
-    "./routing": "./dist/runtime/routing/fileBased.js",
-    "./bundler/*": "./dist/runtime/bundler/*.js"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./routing": {
+      "import": "./dist/runtime/routing/fileBased.js",
+      "types": "./dist/runtime/routing/fileBased.d.ts"
+    },
+    "./bundler/*": {
+      "import": "./dist/runtime/bundler/*.js",
+      "types": "./dist/runtime/bundler/*.d.ts"
+    }
+  },
+
+  "typesVersions": {
+    "*": {
+      "routing": [
+        "./dist/runtime/routing/fileBased.d.ts"
+      ],
+      "bundler/*": [
+        "./dist/runtime/bundler/*.d.ts"
+      ]
+    }
   },
   "scripts": {
     "build": "tsc",
