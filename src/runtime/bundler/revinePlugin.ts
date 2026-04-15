@@ -60,12 +60,11 @@ function wrapWithLayouts(element, layouts) {
 
 function toRoutePath(filePath) {
   let p = filePath;
-  p = p.replace(/[\\\\]/g, "/");
-  p = p.replace(/.*[/]pages[/]/, "");
-  p = p.replace(/[.]tsx$/i, "");
-  p = p.replace(/[/]index$/, "");
-  p = p.replace(/[(][^)]+[)][/]/g, "");
-  p = p.replace(/[[]([\\w]+)[\\]]/g, ":$1");
+  p = p.replace(/\\\\/g, "/");
+  p = p.replace(/.*\\/pages\\//, "");
+  p = p.replace(/\\.tsx$/i, "");
+  p = p.replace(/\\([^)]+\\)\\//g, "");
+  p = p.replace(/\\/index$/, "");
   if (p === "index" || p === "") return "/";
   return "/" + p;
 }
