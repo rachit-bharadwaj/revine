@@ -29,7 +29,6 @@ function RevineErrorDialog() {
       "div",
       { style: dialogStyle },
 
-      // ── Top bar: Revine brand + badge
       React.createElement(
         "div",
         { style: topBarStyle },
@@ -48,10 +47,8 @@ function RevineErrorDialog() {
         React.createElement("span", { style: badgeStyle }, "Runtime Error")
       ),
 
-      // ── Divider
       React.createElement("div", { style: dividerStyle }),
 
-      // ── Error icon + title
       React.createElement(
         "div",
         { style: headerStyle },
@@ -70,7 +67,6 @@ function RevineErrorDialog() {
         React.createElement("span", { style: titleStyle }, "Application Error")
       ),
 
-      // ── Error message + copy button
       React.createElement(
         "div",
         { style: messagePanelStyle },
@@ -95,7 +91,6 @@ function RevineErrorDialog() {
         )
       ),
 
-      // ── Stack trace toggle + content
       stackLines.length > 0 &&
         React.createElement(
           "div",
@@ -117,7 +112,6 @@ function RevineErrorDialog() {
             React.createElement("pre", { style: stackStyle }, stackLines)
         ),
 
-      // ── Actions
       React.createElement(
         "div",
         { style: actionsStyle },
@@ -170,28 +164,21 @@ const dialogStyle = {
 };
 const topBarStyle = {
   display: "flex", alignItems: "center", justifyContent: "space-between",
-  padding: "12px 18px",
-  background: "#0e0e0e",
+  padding: "12px 18px", background: "#0e0e0e",
 };
-const brandStyle = {
-  display: "flex", alignItems: "center", gap: "7px",
-};
+const brandStyle = { display: "flex", alignItems: "center", gap: "7px" };
 const brandNameStyle = {
   fontSize: "13px", fontWeight: 700,
   color: "#c4b5fd", letterSpacing: "0.04em",
   fontFamily: "system-ui, sans-serif",
 };
 const badgeStyle = {
-  fontSize: "11px", fontWeight: 600,
-  color: "#f87171",
+  fontSize: "11px", fontWeight: 600, color: "#f87171",
   background: "rgba(248,113,113,0.1)",
   border: "1px solid rgba(248,113,113,0.2)",
-  borderRadius: "999px", padding: "2px 10px",
-  letterSpacing: "0.03em",
+  borderRadius: "999px", padding: "2px 10px", letterSpacing: "0.03em",
 };
-const dividerStyle = {
-  height: "1px", background: "#1f1f1f",
-};
+const dividerStyle = { height: "1px", background: "#1f1f1f" };
 const headerStyle = {
   display: "flex", alignItems: "center", gap: "10px",
   padding: "20px 22px 0 22px",
@@ -200,20 +187,14 @@ const iconWrapStyle = {
   width: "28px", height: "28px", borderRadius: "8px",
   background: "rgba(248,113,113,0.1)",
   border: "1px solid rgba(248,113,113,0.15)",
-  display: "flex", alignItems: "center", justifyContent: "center",
-  flexShrink: 0,
+  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
 };
-const titleStyle = {
-  fontSize: "15px", fontWeight: 650, color: "#fff",
-  letterSpacing: "-0.01em",
-};
+const titleStyle = { fontSize: "15px", fontWeight: 650, color: "#fff", letterSpacing: "-0.01em" };
 const messagePanelStyle = {
-  position: "relative",
-  margin: "14px 22px 0 22px",
+  position: "relative", margin: "14px 22px 0 22px",
   background: "rgba(248,113,113,0.05)",
   border: "1px solid rgba(248,113,113,0.12)",
-  borderRadius: "8px",
-  padding: "12px 40px 12px 14px",
+  borderRadius: "8px", padding: "12px 40px 12px 14px",
 };
 const messageStyle = {
   fontFamily: "ui-monospace, 'Cascadia Code', 'Fira Code', monospace",
@@ -222,62 +203,146 @@ const messageStyle = {
 };
 const copyBtnStyle = {
   position: "absolute", top: "10px", right: "10px",
-  background: "rgba(255,255,255,0.05)",
-  border: "1px solid #2e2e2e",
-  borderRadius: "6px",
-  width: "28px", height: "28px",
+  background: "rgba(255,255,255,0.05)", border: "1px solid #2e2e2e",
+  borderRadius: "6px", width: "28px", height: "28px",
   display: "flex", alignItems: "center", justifyContent: "center",
-  cursor: "pointer", transition: "background 150ms ease",
-  flexShrink: 0,
+  cursor: "pointer", transition: "background 150ms ease", flexShrink: 0,
 };
-const stackSectionStyle = {
-  margin: "14px 22px 0 22px",
-};
+const stackSectionStyle = { margin: "14px 22px 0 22px" };
 const toggleBtnStyle = {
   background: "none", border: "none", cursor: "pointer",
-  color: "#666", fontSize: "12px",
-  padding: "4px 0",
+  color: "#666", fontSize: "12px", padding: "4px 0",
   display: "flex", alignItems: "center", gap: "6px",
-  letterSpacing: "0.02em",
-  transition: "color 150ms ease",
+  letterSpacing: "0.02em", transition: "color 150ms ease",
 };
 const stackStyle = {
-  background: "#0a0a0a",
-  border: "1px solid #222",
-  borderRadius: "8px",
-  padding: "14px 16px",
-  fontSize: "11px", color: "#888",
-  overflowX: "auto", lineHeight: 1.8,
-  marginTop: "8px", marginBottom: 0,
+  background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px",
+  padding: "14px 16px", fontSize: "11px", color: "#888",
+  overflowX: "auto", lineHeight: 1.8, marginTop: "8px", marginBottom: 0,
   whiteSpace: "pre-wrap", wordBreak: "break-all",
   fontFamily: "ui-monospace, 'Cascadia Code', monospace",
 };
 const actionsStyle = {
-  display: "flex", gap: "10px",
-  padding: "18px 22px 22px 22px",
-  marginTop: "16px",
+  display: "flex", gap: "10px", padding: "18px 22px 22px 22px", marginTop: "16px",
 };
 const primaryBtnStyle = {
-  flex: 1, padding: "10px 0",
-  borderRadius: "8px", border: "none",
+  flex: 1, padding: "10px 0", borderRadius: "8px", border: "none",
   background: "linear-gradient(135deg, #7c3aed, #6d28d9)",
-  color: "#fff", fontWeight: 600,
-  fontSize: "13px", cursor: "pointer",
+  color: "#fff", fontWeight: 600, fontSize: "13px", cursor: "pointer",
   display: "flex", alignItems: "center", justifyContent: "center", gap: "7px",
-  letterSpacing: "0.01em",
-  boxShadow: "0 2px 12px rgba(124,58,237,0.35)",
+  letterSpacing: "0.01em", boxShadow: "0 2px 12px rgba(124,58,237,0.35)",
   fontFamily: "system-ui, sans-serif",
 };
 const secondaryBtnStyle = {
-  flex: 1, padding: "10px 0",
-  borderRadius: "8px",
-  border: "1px solid #2e2e2e",
-  background: "rgba(255,255,255,0.03)",
+  flex: 1, padding: "10px 0", borderRadius: "8px",
+  border: "1px solid #2e2e2e", background: "rgba(255,255,255,0.03)",
   color: "#999", fontSize: "13px", cursor: "pointer",
   display: "flex", alignItems: "center", justifyContent: "center", gap: "7px",
-  letterSpacing: "0.01em",
-  fontFamily: "system-ui, sans-serif",
+  letterSpacing: "0.01em", fontFamily: "system-ui, sans-serif",
 };
+`;
+
+// ── Shared overlay HTML builder (used in both the inline script and module error handler)
+// Written as a plain JS string so it can be embedded inside the injected <script> tag.
+const overlayScriptContent = `
+(function () {
+  function showOverlay(title, message, detail) {
+    if (document.getElementById('__revine_error_overlay__')) return;
+
+    var overlay = document.createElement('div');
+    overlay.id = '__revine_error_overlay__';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif';
+
+    var inner = document.createElement('div');
+    inner.style.cssText = 'background:#141414;border:1px solid #2a2a2a;border-radius:14px;max-width:580px;width:92%;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.7)';
+
+    // Top bar
+    var topBar = document.createElement('div');
+    topBar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#0e0e0e';
+    topBar.innerHTML = '<div style="display:flex;align-items:center;gap:7px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span style="font-size:13px;font-weight:700;color:#c4b5fd;letter-spacing:0.04em">Revine</span></div><span style="font-size:11px;font-weight:600;color:#f87171;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);border-radius:999px;padding:2px 10px">' + title + '</span>';
+
+    // Divider
+    var divider = document.createElement('div');
+    divider.style.cssText = 'height:1px;background:#1f1f1f';
+
+    // Body
+    var body = document.createElement('div');
+    body.style.cssText = 'padding:20px 22px 0';
+
+    var header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:14px';
+    header.innerHTML = '<div style="width:28px;height:28px;border-radius:8px;flex-shrink:0;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.15);display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><span style="font-size:15px;font-weight:600;color:#fff">' + message + '</span>';
+
+    // Message panel with copy button
+    var msgPanel = document.createElement('div');
+    msgPanel.style.cssText = 'position:relative;background:rgba(248,113,113,0.05);border:1px solid rgba(248,113,113,0.12);border-radius:8px;padding:12px 44px 12px 14px;margin-bottom:14px';
+
+    var pre = document.createElement('pre');
+    pre.id = '__revine_err_detail__';
+    pre.style.cssText = 'font-family:ui-monospace,monospace;font-size:12px;color:#fca5a5;margin:0;line-height:1.65;white-space:pre-wrap;word-break:break-all';
+    pre.textContent = detail;
+
+    var copyBtn = document.createElement('button');
+    copyBtn.textContent = '⎘';
+    copyBtn.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(255,255,255,0.05);border:1px solid #2e2e2e;border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;font-size:13px';
+    copyBtn.onclick = function() {
+      navigator.clipboard.writeText(pre.textContent || '').then(function() {
+        copyBtn.textContent = '✓';
+        setTimeout(function() { copyBtn.textContent = '⎘'; }, 2000);
+      });
+    };
+
+    msgPanel.appendChild(pre);
+    msgPanel.appendChild(copyBtn);
+    body.appendChild(header);
+    body.appendChild(msgPanel);
+
+    // Actions
+    var actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;gap:10px;padding:4px 22px 22px';
+
+    var reloadBtn = document.createElement('button');
+    reloadBtn.textContent = 'Reload page';
+    reloadBtn.style.cssText = 'flex:1;padding:10px 0;border-radius:8px;border:none;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;font-weight:600;font-size:13px;cursor:pointer;box-shadow:0 2px 12px rgba(124,58,237,0.35)';
+    reloadBtn.onclick = function() { window.location.reload(); };
+
+    var dismissBtn = document.createElement('button');
+    dismissBtn.textContent = 'Dismiss';
+    dismissBtn.style.cssText = 'flex:1;padding:10px 0;border-radius:8px;border:1px solid #2e2e2e;background:rgba(255,255,255,0.03);color:#999;font-size:13px;cursor:pointer';
+    dismissBtn.onclick = function() { overlay.remove(); };
+
+    actions.appendChild(reloadBtn);
+    actions.appendChild(dismissBtn);
+
+    inner.appendChild(topBar);
+    inner.appendChild(divider);
+    inner.appendChild(body);
+    inner.appendChild(actions);
+    overlay.appendChild(inner);
+    document.body.appendChild(overlay);
+  }
+
+  // Expose globally so the module onerror attribute can call it
+  window.__revineShowOverlay = showOverlay;
+
+  // Catches runtime JS errors and async rejections
+  window.addEventListener('error', function(e) {
+    // Ignore errors that already have an overlay
+    if (document.getElementById('__revine_error_overlay__')) return;
+    var msg = e.message || 'Unknown error';
+    var src = e.filename ? e.filename.replace(location.origin, '') : '';
+    var detail = src ? msg + '\\n\\nSource: ' + src + (e.lineno ? ':' + e.lineno : '') : msg;
+    showOverlay('Module Error', 'Failed to load module', detail);
+  });
+
+  window.addEventListener('unhandledrejection', function(e) {
+    if (document.getElementById('__revine_error_overlay__')) return;
+    var reason = e.reason;
+    var msg = (reason && reason.message) ? reason.message : String(reason || 'Unhandled Promise rejection');
+    var detail = (reason && reason.stack) ? reason.stack : msg;
+    showOverlay('Unhandled Rejection', 'Promise rejected', detail);
+  });
+})();
 `;
 
 export function revinePlugin(): any {
@@ -289,6 +354,27 @@ export function revinePlugin(): any {
       if (id === "revine/routing") {
         return VIRTUAL_ROUTING_ID;
       }
+    },
+
+    transformIndexHtml(html: string) {
+      // 1. Inject the overlay listener script into <head>
+      let result = html.replace(
+        "</head>",
+        `<script>${overlayScriptContent}</script></head>`,
+      );
+
+      // 2. Find the main module entry <script> tag and attach an onerror handler.
+      //    This is the ONLY way to catch ES module link-time errors like
+      //    "does not provide an export named 'X'" — window.onerror does NOT fire for these.
+      result = result.replace(
+        /(<script\s[^>]*type=["']module["'][^>]*src=["'][^"']+["'][^>]*)(\/?>)/g,
+        (_match: string, opening: string, closing: string) =>
+          opening +
+          ` onerror="window.__revineShowOverlay && window.__revineShowOverlay('Module Error','Failed to load application',event.type+': A module failed to load. Check all imports are valid and run \\'npm run build\\' in the Revine package.')"` +
+          closing,
+      );
+
+      return result;
     },
 
     load(id: string) {
