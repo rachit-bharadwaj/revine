@@ -2,6 +2,12 @@ import { useEffect, useRef, useState, type ImgHTMLAttributes } from "react";
 
 type ObjectFit = "contain" | "cover" | "fill" | "none" | "scale-down";
 
+declare module "react" {
+  interface ImgHTMLAttributes<T> {
+    fetchpriority?: "high" | "low" | "auto";
+  }
+}
+
 export interface ImageProps extends Omit<
   ImgHTMLAttributes<HTMLImageElement>,
   "src" | "width" | "height" | "placeholder"
@@ -126,7 +132,7 @@ export function Image({
             alt={alt}
             loading={priority ? "eager" : "lazy"}
             decoding={priority ? "sync" : "async"}
-            fetchPriority={priority ? "high" : "auto"}
+            fetchpriority={priority ? "high" : "auto"}
             onLoad={() => setLoaded(true)}
             onError={handleError}
             className={className}
@@ -196,7 +202,7 @@ export function Image({
           height={height}
           loading={priority ? "eager" : "lazy"}
           decoding={priority ? "sync" : "async"}
-          fetchPriority={priority ? "high" : "auto"}
+          fetchpriority={priority ? "high" : "auto"}
           onLoad={() => setLoaded(true)}
           onError={handleError}
           className={className}

@@ -476,7 +476,12 @@ routes.push({
   errorElement: createElement(RevineErrorDialog),
 });
 
-export const router = createBrowserRouter(routes);
+export const router = createBrowserRouter(routes, {
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true,
+  },
+});
 `;
       }
     },
