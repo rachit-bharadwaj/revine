@@ -2,7 +2,33 @@
 import { Command } from "commander";
 import { readFileSync } from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
+import Module from "module";
+
+// Override Node.js module resolution for React/ReactRouter packages
+// to always resolve to the user's project node_modules.
+const originalResolve = (Module as any)._resolveFilename;
+(Module as any)._resolveFilename = function (request: string, parent: any, isMain: boolean, options: any) {
+  if (
+    request === "react" ||
+    request === "react-dom" ||
+    request === "react-router-dom" ||
+    request.startsWith("react/") ||
+    request.startsWith("react-dom/") ||
+    request.startsWith("react-router-dom/")
+  ) {
+    try {
+      const { createRequire } = Module;
+      const projectReq = createRequire(pathToFileURL(path.join(process.cwd(), "package.json")).href);
+      const resolved = projectReq.resolve(request);
+      return originalResolve.call(this, resolved, parent, isMain, options);
+    } catch (e) {
+      // Fallback to original
+    }
+  }
+  return originalResolve.apply(this, arguments as any);
+};
+
 import { createProject } from "./commands/createProject.js";
 import { runExportCommand } from "./commands/export.js";
 import { runServeCommand } from "./commands/server.js";
@@ -86,21 +112,6 @@ const runViteCommand = async (command: string, options?: { ssr?: boolean }) => {
 
     logStep("Building server bundle for SSR/SSG...");
     const serverEntry = path.resolve(__dirname, "runtime/entry-server.js");
-    
-    const { createRequire } = await import("module");
-    const require = createRequire(import.meta.url);
-    const resolveProjectDepPath = (pkgName: string) => {
-      try {
-        const packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [process.cwd()] });
-        return path.dirname(packageJsonPath);
-      } catch (e) {
-        return "";
-      }
-    };
-    const projectReactDir = resolveProjectDepPath("react");
-    const projectReactDomDir = resolveProjectDepPath("react-dom");
-    const projectRouterDomDir = resolveProjectDepPath("react-router-dom");
-
     await vite.build({
       ...config,
       configFile: false,
@@ -109,28 +120,6 @@ const runViteCommand = async (command: string, options?: { ssr?: boolean }) => {
         ssr: serverEntry,
         outDir: path.resolve(process.cwd(), outDir, "server"),
         emptyOutDir: true,
-        rollupOptions: {
-          ...(config.build?.rollupOptions || {}),
-          external: (id) => {
-            if (
-              id === "react" ||
-              id === "react-dom" ||
-              id === "react-router-dom" ||
-              (projectReactDir && id.includes(projectReactDir)) ||
-              (projectReactDomDir && id.includes(projectReactDomDir)) ||
-              (projectRouterDomDir && id.includes(projectRouterDomDir))
-            ) {
-              return true;
-            }
-            if (typeof config.build?.rollupOptions?.external === "function") {
-              return config.build.rollupOptions.external(id);
-            }
-            if (Array.isArray(config.build?.rollupOptions?.external)) {
-              return config.build.rollupOptions.external.includes(id);
-            }
-            return false;
-          }
-        }
       },
     });
 
