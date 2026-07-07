@@ -39,10 +39,22 @@ const runViteCommand = async (command: string, options?: { ssr?: boolean }) => {
   );
   const config = await generateRevineViteConfig();
 
+  const { loadUserConfig } = await import(
+    path.resolve(__dirname, "runtime/bundler/utils/loadUserConfig.js")
+  );
+  let userConfig: any = {};
+  try {
+    userConfig = await loadUserConfig();
+  } catch (e) {
+    // Ignore config loading error
+  }
+  const defaultMode = userConfig.rendering?.default ?? "csr";
+
   if (command === "dev") {
     const startTime = Date.now();
+    const isSSR = options?.ssr || defaultMode === "ssr" || defaultMode === "ssg";
 
-    if (options?.ssr) {
+    if (isSSR) {
       // SSR dev mode: Vite as middleware + server-rendered responses
       const server = await vite.createServer({
         ...config,
@@ -64,6 +76,7 @@ const runViteCommand = async (command: string, options?: { ssr?: boolean }) => {
     }
   } else if (command === "build") {
     const startTime = Date.now();
+    const outDir = config.build?.outDir ?? "build";
 
     logStep("Building client bundle...");
     await vite.build({
@@ -73,19 +86,74 @@ const runViteCommand = async (command: string, options?: { ssr?: boolean }) => {
 
     logStep("Building server bundle for SSR/SSG...");
     const serverEntry = path.resolve(__dirname, "runtime/entry-server.js");
+    
+    const { createRequire } = await import("module");
+    const require = createRequire(import.meta.url);
+    const resolveProjectDepPath = (pkgName: string) => {
+      try {
+        const packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [process.cwd()] });
+        return path.dirname(packageJsonPath);
+      } catch (e) {
+        return "";
+      }
+    };
+    const projectReactDir = resolveProjectDepPath("react");
+    const projectReactDomDir = resolveProjectDepPath("react-dom");
+    const projectRouterDomDir = resolveProjectDepPath("react-router-dom");
+
     await vite.build({
       ...config,
       configFile: false,
       build: {
         ...(config.build || {}),
         ssr: serverEntry,
-        outDir: "build/server",
+        outDir: path.resolve(process.cwd(), outDir, "server"),
         emptyOutDir: true,
+        rollupOptions: {
+          ...(config.build?.rollupOptions || {}),
+          external: (id) => {
+            if (
+              id === "react" ||
+              id === "react-dom" ||
+              id === "react-router-dom" ||
+              (projectReactDir && id.includes(projectReactDir)) ||
+              (projectReactDomDir && id.includes(projectReactDomDir)) ||
+              (projectRouterDomDir && id.includes(projectRouterDomDir))
+            ) {
+              return true;
+            }
+            if (typeof config.build?.rollupOptions?.external === "function") {
+              return config.build.rollupOptions.external(id);
+            }
+            if (Array.isArray(config.build?.rollupOptions?.external)) {
+              return config.build.rollupOptions.external.includes(id);
+            }
+            return false;
+          }
+        }
       },
     });
 
     const duration = Date.now() - startTime;
     logSuccess(`Build completed in ${chalk.bold(duration)}ms`);
+
+    // SSG static export automatically at the end of the build if defaultMode is ssg or if any SSG page exists
+    try {
+      const serverEntryPath = path.resolve(process.cwd(), outDir, "server/entry-server.js");
+      const fsExtra = await import("fs-extra");
+      if (await fsExtra.pathExists(serverEntryPath)) {
+        const { pathToFileURL } = await import("url");
+        const serverModule = await import(pathToFileURL(serverEntryPath).href);
+        const pages = serverModule.getPageMetadata?.() ?? [];
+        const hasSSG = defaultMode === "ssg" || pages.some((p: any) => p.mode === "ssg");
+        if (hasSSG) {
+          logStep("Pre-rendering SSG pages to static HTML...");
+          await runExportCommand();
+        }
+      }
+    } catch (e) {
+      // Ignore or log error
+    }
   } else if (command === "preview") {
     const startTime = Date.now();
     const server = await vite.preview({
@@ -103,7 +171,7 @@ program
   .argument("[project-name/command]")
   .option("-f, --force", "Force creation in non-empty directory")
   .action(async (arg: string | undefined, options: { force?: boolean }) => {
-    const knownCommands = ["create", "dev", "build", "preview", "export", "serve"];
+    const knownCommands = ["create", "dev", "build", "preview", "export", "serve", "start"];
     if (arg && !knownCommands.includes(arg)) {
       await handleProjectCreation(arg, options);
     } else if (!arg) {
@@ -145,6 +213,14 @@ program
 
 program
   .command("serve")
+  .description("Start the production SSR server")
+  .option("-p, --port <port>", "Port number", "3000")
+  .action(async (options: { port: string }) => {
+    await runServeCommand(parseInt(options.port));
+  });
+
+program
+  .command("start")
   .description("Start the production SSR server")
   .option("-p, --port <port>", "Port number", "3000")
   .action(async (options: { port: string }) => {

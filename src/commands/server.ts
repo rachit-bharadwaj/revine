@@ -4,11 +4,24 @@ import path from "path";
 import { pathToFileURL } from "url";
 import { logStep, logSuccess, logError } from "../utils/logger.js";
 import { triggerISRRegeneration, type ISRManifest } from "../runtime/isr.js";
+import { loadUserConfig } from "../runtime/bundler/utils/loadUserConfig.js";
 import chalk from "chalk";
+import { createRequire } from "module";
 
 export async function runServeCommand(port: number = 3000) {
   const cwd = process.cwd();
-  const buildDir = path.resolve(cwd, "build");
+  const require = createRequire(import.meta.url);
+  const projectRouterDomPath = require.resolve("react-router-dom", { paths: [cwd] });
+  const { matchPath } = await import(pathToFileURL(projectRouterDomPath).href);
+
+  let userConfig: any = {};
+  try {
+    userConfig = await loadUserConfig();
+  } catch (e) {
+    // Ignore error
+  }
+  const outDir = userConfig.vite?.build?.outDir ?? "build";
+  const buildDir = path.resolve(cwd, outDir);
   const serverEntryPath = path.resolve(buildDir, "server/entry-server.js");
   const clientHtmlPath = path.resolve(buildDir, "index.html");
 
@@ -67,20 +80,46 @@ export async function runServeCommand(port: number = 3000) {
     if (url.startsWith("/assets/") || url.match(/\.\w+$/)) {
       const filePath = path.resolve(buildDir, url.slice(1));
       if (await fs.pathExists(filePath)) {
-        const content = await fs.readFile(filePath);
-        const ext = path.extname(filePath);
-        res.writeHead(200, {
-          "Content-Type": mimeTypes[ext] || "application/octet-stream",
-          "Cache-Control": url.startsWith("/assets/")
-            ? "public, max-age=31536000, immutable"
-            : "public, max-age=3600",
-        });
-        res.end(content);
-        return;
+        const stat = await fs.stat(filePath);
+        if (stat.isFile()) {
+          const content = await fs.readFile(filePath);
+          const ext = path.extname(filePath);
+          res.writeHead(200, {
+            "Content-Type": mimeTypes[ext] || "application/octet-stream",
+            "Cache-Control": url.startsWith("/assets/")
+              ? "public, max-age=31536000, immutable"
+              : "public, max-age=3600",
+          });
+          res.end(content);
+          return;
+        }
       }
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("404 — Not Found");
+      return;
     }
 
     try {
+      const parsedUrl = new URL(url, "http://localhost");
+      let matchedPage: any = null;
+      for (const p of pages) {
+        const match = matchPath({ path: p.routePath, end: true }, parsedUrl.pathname);
+        if (match) {
+          matchedPage = p;
+          break;
+        }
+      }
+
+      // If page is client-side rendered only, bypass SSR and return HTML shell
+      if (matchedPage && matchedPage.mode === "csr") {
+        res.writeHead(200, {
+          "Content-Type": "text/html",
+          "Cache-Control": "no-cache",
+        });
+        res.end(htmlTemplate);
+        return;
+      }
+
       // Check for pre-rendered static page (SSG)
       const staticPath = url === "/"
         ? path.resolve(buildDir, "static/index.html")
@@ -97,7 +136,10 @@ export async function runServeCommand(port: number = 3000) {
         }
 
         const content = await fs.readFile(staticPath, "utf-8");
-        res.writeHead(200, { "Content-Type": "text/html" });
+        res.writeHead(200, {
+          "Content-Type": "text/html",
+          "Cache-Control": "no-cache",
+        });
         res.end(content);
         return;
       }
@@ -117,7 +159,10 @@ export async function runServeCommand(port: number = 3000) {
         `<div id="root" data-ssr="true">${html}</div>`
       );
 
-      res.writeHead(statusCode, { "Content-Type": "text/html" });
+      res.writeHead(statusCode, {
+        "Content-Type": "text/html",
+        "Cache-Control": "no-cache",
+      });
       res.end(fullHtml);
     } catch (e: any) {
       console.error("SSR Error:", e);
@@ -128,7 +173,7 @@ export async function runServeCommand(port: number = 3000) {
 
   server.listen(port, () => {
     logSuccess(
-      `Revine SSR server running on ${chalk.blue(`http://localhost:${port}/`)}`
+      `Revine server running on ${chalk.blue(`http://localhost:${port}/`)}`
     );
   });
 }

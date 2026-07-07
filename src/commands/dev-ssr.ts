@@ -2,6 +2,8 @@ import http from "http";
 import fs from "fs-extra";
 import path from "path";
 import { printDevServerInfo } from "../utils/logger.js";
+import { createRequire } from "module";
+import { pathToFileURL } from "url";
 
 async function findCssFiles(dir: string): Promise<string[]> {
   const files: string[] = [];
@@ -64,9 +66,31 @@ export async function createSSRDevServer(
 
         // Load the server entry through Vite's SSR module loader
         // This supports HMR — modules are re-evaluated on change
-        const { render } = await viteServer.ssrLoadModule(
+        const { render, getPageMetadata } = await viteServer.ssrLoadModule(
           "revine/entry-server"
         );
+
+        let isCSR = false;
+        try {
+          const pages = getPageMetadata();
+          const require = createRequire(import.meta.url);
+          const projectRouterDomPath = require.resolve("react-router-dom", { paths: [process.cwd()] });
+          const { matchPath } = await import(pathToFileURL(projectRouterDomPath).href);
+          const parsedUrl = new URL(url, "http://localhost");
+          for (const p of pages) {
+            const match = matchPath({ path: p.routePath, end: true }, parsedUrl.pathname);
+            if (match && p.mode === "csr") {
+              isCSR = true;
+              break;
+            }
+          }
+        } catch (e) {}
+
+        if (isCSR) {
+          res.writeHead(200, { "Content-Type": "text/html" });
+          res.end(template);
+          return;
+        }
 
         const { html, statusCode, redirect } = await render(
           `http://localhost:${port}${url}`

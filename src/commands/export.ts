@@ -2,6 +2,7 @@ import fs from "fs-extra";
 import path from "path";
 import { pathToFileURL } from "url";
 import { logStep, logSuccess, logError } from "../utils/logger.js";
+import { loadUserConfig } from "../runtime/bundler/utils/loadUserConfig.js";
 import chalk from "chalk";
 
 interface PageMeta {
@@ -22,7 +23,14 @@ interface ISRManifest {
 
 export async function runExportCommand() {
   const cwd = process.cwd();
-  const buildDir = path.resolve(cwd, "build");
+  let userConfig: any = {};
+  try {
+    userConfig = await loadUserConfig();
+  } catch (e) {
+    // Ignore error
+  }
+  const outDir = userConfig.vite?.build?.outDir ?? "build";
+  const buildDir = path.resolve(cwd, outDir);
   const serverEntryPath = path.resolve(buildDir, "server/entry-server.js");
   const clientHtmlPath = path.resolve(buildDir, "index.html");
 
