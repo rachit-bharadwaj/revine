@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
+
+# bundles
 dist/
+build/
 
 # Environment files
 .env
