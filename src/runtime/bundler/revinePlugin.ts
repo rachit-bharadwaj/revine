@@ -1,4 +1,6 @@
 import { loadUserConfig } from "./utils/loadUserConfig.js";
+import fs from "fs-extra";
+import path from "path";
 
 function parseRevalidateTime(time: string | number | undefined): number | undefined {
   if (time === undefined) return undefined;
@@ -376,6 +378,27 @@ export function revinePlugin(): any {
   return {
     name: "revine",
     enforce: "pre",
+
+    async writeBundle() {
+      try {
+        const cwd = process.cwd();
+        let userConfig: any = {};
+        try {
+          userConfig = await loadUserConfig();
+        } catch (e) {
+          // Ignore
+        }
+        const outDir = userConfig.vite?.build?.outDir ?? "build";
+        const targetDir = path.resolve(cwd, outDir);
+        const redirectsPath = path.resolve(targetDir, "_redirects");
+
+        if ((await fs.pathExists(targetDir)) && !(await fs.pathExists(redirectsPath))) {
+          await fs.writeFile(redirectsPath, "/* /index.html 200\n", "utf-8");
+        }
+      } catch (e) {
+        // Ignore
+      }
+    },
 
     resolveId(id: string) {
       if (id === "revine/routing") {

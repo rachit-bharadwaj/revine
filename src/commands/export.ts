@@ -135,6 +135,15 @@ export async function runExportCommand() {
     logSuccess(`ISR manifest written with ${chalk.bold(Object.keys(isrManifest).length)} route(s).`);
   }
 
+  // Ensure static output has _redirects for SPA/SSG hostings
+  const staticDir = path.resolve(buildDir, "static");
+  if (await fs.pathExists(staticDir)) {
+    const staticRedirectsPath = path.resolve(staticDir, "_redirects");
+    if (!(await fs.pathExists(staticRedirectsPath))) {
+      await fs.writeFile(staticRedirectsPath, "/* /index.html 200\n", "utf-8");
+    }
+  }
+
   logSuccess(
     `Exported ${chalk.bold(exported)} static page(s) to ${chalk.cyan("build/static/")}`
   );
