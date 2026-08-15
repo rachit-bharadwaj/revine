@@ -32,6 +32,7 @@ const originalResolve = (Module as any)._resolveFilename;
 import { createProject } from "./commands/createProject.js";
 import { runExportCommand } from "./commands/export.js";
 import { runServeCommand } from "./commands/server.js";
+import { runCleanCommand } from "./commands/clean.js";
 import { printDevServerInfo, logStep, logSuccess, logBrand } from "./utils/logger.js";
 import chalk from "chalk";
 
@@ -154,20 +155,6 @@ const runViteCommand = async (command: string, options?: { ssr?: boolean }) => {
   }
 };
 
-// Root command — handles: npx revine <project-name>
-program
-  .version(pkg.version)
-  .argument("[project-name/command]")
-  .option("-f, --force", "Force creation in non-empty directory")
-  .action(async (arg: string | undefined, options: { force?: boolean }) => {
-    const knownCommands = ["create", "dev", "build", "preview", "export", "serve", "start"];
-    if (arg && !knownCommands.includes(arg)) {
-      await handleProjectCreation(arg, options);
-    } else if (!arg) {
-      program.help();
-    }
-  });
-
 // npx revine create <project-name>
 program
   .command("create")
@@ -214,6 +201,27 @@ program
   .option("-p, --port <port>", "Port number", "3000")
   .action(async (options: { port: string }) => {
     await runServeCommand(parseInt(options.port));
+  });
+
+program
+  .command("clean")
+  .description("Clean up project boilerplate (empties README.md and resets src/pages/index.tsx)")
+  .action(async () => {
+    await runCleanCommand();
+  });
+
+// Root command — handles: npx revine <project-name>
+program
+  .version(pkg.version)
+  .argument("[project-name/command]")
+  .option("-f, --force", "Force creation in non-empty directory")
+  .action(async (arg: string | undefined, options: { force?: boolean }) => {
+    const knownCommands = program.commands.map((cmd) => cmd.name());
+    if (arg && !knownCommands.includes(arg)) {
+      await handleProjectCreation(arg, options);
+    } else if (!arg) {
+      program.help();
+    }
   });
 
 logBrand();

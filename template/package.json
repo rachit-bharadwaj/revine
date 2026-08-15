@@ -9,7 +9,8 @@
     "start": "revine start",
     "preview": "revine preview",
     "export": "revine export",
-    "serve": "revine serve"
+    "serve": "revine serve",
+    "clean": "revine clean"
   },
   "dependencies": {
     "revine": "latest",
